@@ -1,4 +1,3 @@
-using System;
 using StronglyTypedIds;
 
 namespace Sample;
