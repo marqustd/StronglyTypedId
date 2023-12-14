@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -20,17 +21,23 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
         RegisterValidator(context);
         RegisterStringTransformation(context);
 
+        RegisterRecords(context);
+    }
+
+    private void RegisterRecords(IncrementalGeneratorInitializationContext context)
+    {
+
         // Filter classes annotated with the [StronglyTypedIds] attribute. Only filtered Syntax Nodes can trigger code generation.
         var provider = context.SyntaxProvider
             .CreateSyntaxProvider(
                 (s, _) => s is RecordDeclarationSyntax,
-                (ctx, _) => GetClassDeclarationForSourceGen(ctx))
+                (ctx, _) => GetRecordDeclarationForSourceGen(ctx))
             .Where(t => t.reportAttributeFound)
             .Select((t, _) => t.recordSyntax);
 
         // Generate the source code.
         context.RegisterSourceOutput(context.CompilationProvider.Combine(provider.Collect()),
-            ((ctx, t) => GenerateCode(ctx, t.Left, t.Right)));
+            ((ctx, t) => GenerateRecordCode(ctx, t.Left, t.Right)));
     }
 
     private static void RegisterAttribute(IncrementalGeneratorInitializationContext context)
@@ -55,17 +62,17 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// Checks whether the Node is annotated with the [StronglyTypedIds] attribute and maps syntax context to the specific node type (ClassDeclarationSyntax).
+    /// Checks whether the Node is annotated with the [StronglyTypedIds] attribute and maps syntax context to the specific node type (RecordDeclarationSyntax).
     /// </summary>
     /// <param name="context">Syntax context, based on CreateSyntaxProvider predicate</param>
     /// <returns>The specific cast and whether the attribute was found.</returns>
-    private static (RecordDeclarationSyntax recordSyntax, bool reportAttributeFound) GetClassDeclarationForSourceGen(
+    private static (RecordDeclarationSyntax recordSyntax, bool reportAttributeFound) GetRecordDeclarationForSourceGen(
         GeneratorSyntaxContext context)
     {
-        var recordDeclarationSyntax = (RecordDeclarationSyntax)context.Node;
+        var RecordDeclarationSyntax = (RecordDeclarationSyntax)context.Node;
 
         // Go through all attributes of the class.
-        foreach (AttributeListSyntax attributeListSyntax in recordDeclarationSyntax.AttributeLists)
+        foreach (AttributeListSyntax attributeListSyntax in RecordDeclarationSyntax.AttributeLists)
         foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
         {
             if (context.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol is not IMethodSymbol attributeSymbol)
@@ -75,31 +82,58 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
 
             // Check the full name of the [StronglyTypedIds] attribute.
             if (attributeName == $"{Namespace}.{AttributeName}")
-                return (recordDeclarationSyntax, true);
+                return (RecordDeclarationSyntax, true);
         }
 
-        return (recordDeclarationSyntax, false);
+        return (RecordDeclarationSyntax, false);
+    }
+
+    /// <summary>
+    /// Checks whether the Node is annotated with the [StronglyTypedIds] attribute and maps syntax context to the specific node type (RecordDeclarationSyntax).
+    /// </summary>
+    /// <param name="context">Syntax context, based on CreateSyntaxProvider predicate</param>
+    /// <returns>The specific cast and whether the attribute was found.</returns>
+    private static (StructDeclarationSyntax recordSyntax, bool reportAttributeFound) GetStructDeclarationForSourceGen(
+        GeneratorSyntaxContext context)
+    {
+        var RecordDeclarationSyntax = (StructDeclarationSyntax)context.Node;
+
+        // Go through all attributes of the class.
+        foreach (AttributeListSyntax attributeListSyntax in RecordDeclarationSyntax.AttributeLists)
+        foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
+        {
+            if (context.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol is not IMethodSymbol attributeSymbol)
+                continue; // if we can't get the symbol, ignore it
+
+            string attributeName = attributeSymbol.ContainingType.ToDisplayString();
+
+            // Check the full name of the [StronglyTypedIds] attribute.
+            if (attributeName == $"{Namespace}.{AttributeName}")
+                return (RecordDeclarationSyntax, true);
+        }
+
+        return (RecordDeclarationSyntax, false);
     }
 
     /// <summary>
     /// Generate code action.
-    /// It will be executed on specific nodes (ClassDeclarationSyntax annotated with the [StronglyTypedIds] attribute) changed by the user.
+    /// It will be executed on specific nodes (RecordDeclarationSyntax annotated with the [StronglyTypedIds] attribute) changed by the user.
     /// </summary>
     /// <param name="context">Source generation context used to add source files.</param>
     /// <param name="compilation">Compilation used to provide access to the Semantic Model.</param>
-    /// <param name="classDeclarations">Nodes annotated with the [StronglyTypedIds] attribute that trigger the generate action.</param>
-    private void GenerateCode(SourceProductionContext context,
+    /// <param name="recordDeclarations">Nodes annotated with the [StronglyTypedIds] attribute that trigger the generate action.</param>
+    private void GenerateRecordCode(SourceProductionContext context,
         Compilation compilation,
-        ImmutableArray<RecordDeclarationSyntax> classDeclarations)
+        ImmutableArray<RecordDeclarationSyntax> recordDeclarations)
     {
         // Go through all filtered class declarations.
-        foreach (var recordDeclarationSyntax in classDeclarations)
+        foreach (var RecordDeclarationSyntax in recordDeclarations)
         {
             // We need to get semantic model of the class to retrieve metadata.
-            var semanticModel = compilation.GetSemanticModel(recordDeclarationSyntax.SyntaxTree);
+            var semanticModel = compilation.GetSemanticModel(RecordDeclarationSyntax.SyntaxTree);
 
             // Symbols allow us to get the compile-time information.
-            if (semanticModel.GetDeclaredSymbol(recordDeclarationSyntax) is not INamedTypeSymbol classSymbol)
+            if (semanticModel.GetDeclaredSymbol(RecordDeclarationSyntax) is not INamedTypeSymbol classSymbol)
                 continue;
 
             var namespaceName = classSymbol.ContainingNamespace.ToDisplayString();
@@ -108,7 +142,96 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
             var stringTransformation = TryGetStringTransformation(classSymbol);
 
             // 'Identifier' means the token of the node. Get class name from the syntax node.
-            var className = recordDeclarationSyntax.Identifier.Text;
+            var className = RecordDeclarationSyntax.Identifier.Text;
+
+            var code = classSymbol.TypeKind switch
+            {
+                TypeKind.Class => ClassCode(className, namespaceName, validator, stringTransformation),
+                TypeKind.Struct => StructCode(className, namespaceName, validator, stringTransformation),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            // Add the source code to the compilation.
+            context.AddSource($"{className}.g.cs", SourceText.From(code, Encoding.UTF8));
+        }
+    }
+
+    private static string StructCode(string className, string namespaceName, INamedTypeSymbol? validator, int? stringTransformation)
+        => $$"""
+             // <auto-generated/>
+             using System.Diagnostics.CodeAnalysis;
+             using System;
+
+             namespace {{namespaceName}};
+
+             partial record struct {{className}}
+             {
+                 public string Value { get; }
+                 
+                 [Obsolete("Don't use default constructor.", error: true)]
+                 public {{className}}()
+                 {}
+                 
+                 {{Constructor(validator, stringTransformation, className)}}
+                 
+                 public static implicit operator string({{className}} stronglyTyped) => stronglyTyped.ToString();
+             
+                 public static explicit operator {{className}}(string value) => new(value);
+             
+                 public override string ToString() => Value;
+             }
+             """;
+
+    private static string ClassCode(string className, string namespaceName, INamedTypeSymbol? validator, int? stringTransformation)
+        => $$"""
+             // <auto-generated/>
+             using System.Diagnostics.CodeAnalysis;
+             using System;
+
+             namespace {{namespaceName}};
+
+             partial record {{className}}
+             {
+                 public string Value { get; }
+                 
+                 {{Constructor(validator, stringTransformation, className)}}
+                 
+                 public static implicit operator string({{className}} stronglyTyped) => stronglyTyped.ToString();
+             
+                 public static explicit operator {{className}}(string value) => new(value);
+             
+                 public override string ToString() => Value;
+             }
+             """;
+
+    /// <summary>
+    /// Generate code action.
+    /// It will be executed on specific nodes (RecordDeclarationSyntax annotated with the [StronglyTypedIds] attribute) changed by the user.
+    /// </summary>
+    /// <param name="context">Source generation context used to add source files.</param>
+    /// <param name="compilation">Compilation used to provide access to the Semantic Model.</param>
+    /// <param name="structDeclarations">Nodes annotated with the [StronglyTypedIds] attribute that trigger the generate action.</param>
+    private void GenerateStructCode(SourceProductionContext context,
+        Compilation compilation,
+        ImmutableArray<StructDeclarationSyntax> structDeclarations)
+    {
+        // Go through all filtered class declarations.
+        foreach (var RecordDeclarationSyntax in structDeclarations)
+        {
+            // We need to get semantic model of the class to retrieve metadata.
+            var semanticModel = compilation.GetSemanticModel(RecordDeclarationSyntax.SyntaxTree);
+
+            // Symbols allow us to get the compile-time information.
+            if (semanticModel.GetDeclaredSymbol(RecordDeclarationSyntax) is not INamedTypeSymbol classSymbol)
+                continue;
+
+            var namespaceName = classSymbol.ContainingNamespace.ToDisplayString();
+
+            var validator = TryGetValidator(classSymbol);
+            var stringTransformation = TryGetStringTransformation(classSymbol);
+
+            // 'Identifier' means the token of the node. Get class name from the syntax node.
+            var className = RecordDeclarationSyntax.Identifier.Text;
 
 
             // Build up the source code
@@ -117,10 +240,10 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
                   // <auto-generated/>
                   using System.Diagnostics.CodeAnalysis;
                   using System;
-                  
+
                   namespace {{namespaceName}};
 
-                  partial record {{className}}
+                  partial record struct {{className}}
                   {
                       public string Value { get; }
                       
