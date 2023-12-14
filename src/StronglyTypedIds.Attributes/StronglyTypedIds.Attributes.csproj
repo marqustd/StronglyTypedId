@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-        <RootNamespace>StronglyTypedIds.Attributes</RootNamespace>
+        <RootNamespace>StronglyTypedIds</RootNamespace>
     </PropertyGroup>
 
 </Project>

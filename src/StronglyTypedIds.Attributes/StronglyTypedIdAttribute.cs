@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace StronglyTypedIds.Attributes;
+namespace StronglyTypedIds;
 
 [System.AttributeUsage(System.AttributeTargets.Class)]
 public class StronglyTypedIdAttribute : Attribute
