@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Reflection;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -39,14 +38,14 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
             $"{AttributeName}.g.cs",
             SourceText.From(EmbeddedSources.StronglyTypedIdAttributeSource, Encoding.UTF8)));
     }
-    
+
     private static void RegisterValidator(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
             $"{nameof(IValidator)}.g.cs",
             SourceText.From(EmbeddedSources.IValidatorSource, Encoding.UTF8)));
     }
-    
+
     private static void RegisterStringTransformation(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
@@ -104,12 +103,12 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
 
             var namespaceName = classSymbol.ContainingNamespace.ToDisplayString();
 
+            // var validator = TryGetValidator(classSymbol);
+            var stringTransformation = TryGetStringTransformation(classSymbol);
+
             // 'Identifier' means the token of the node. Get class name from the syntax node.
             var className = recordDeclarationSyntax.Identifier.Text;
-            
-            var checkValidator = classSymbol.GetAttributes()
-                .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == $"{Namespace}.{AttributeName}")?
-                .ConstructorArguments.FirstOrDefault().Value as INamedTypeSymbol;
+
 
             // Build up the source code
             var code =
@@ -123,9 +122,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
                       
                       public {{className}}(string value)
                       {
-                        {{Validation(checkValidator)}}
-                      
-                          Value = value.ToUpperInvariant();
+                          Value = {{TransformationValue(stringTransformation)}};
                       }
                       
                       public static implicit operator string({{className}} stronglyTyped) => stronglyTyped.ToString();
@@ -140,6 +137,39 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
             context.AddSource($"{className}.g.cs", SourceText.From(code, Encoding.UTF8));
         }
     }
+
+    private static string TransformationValue(int? stringTransformation)
+    {
+        var transformation = stringTransformation switch
+        {
+            1 => "value.ToUpperInvariant()",
+            2 => "value.ToLowerInvariant()",
+            _ => "value"
+        };
+        
+        return transformation;
+    }
+
+    private static INamedTypeSymbol? TryGetValidator(INamedTypeSymbol classSymbol)
+    {
+        var constructorArguments = classSymbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == NamespacePrefix(AttributeName))?
+            .ConstructorArguments;
+
+        return constructorArguments?.FirstOrDefault(a => a.Type?.ToDisplayString() == "System.Type").Value as INamedTypeSymbol;
+    }
+
+    private static int? TryGetStringTransformation(INamedTypeSymbol classSymbol)
+    {
+        var constructorArguments = classSymbol.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == NamespacePrefix(AttributeName))?
+            .ConstructorArguments;
+
+        var value = constructorArguments?.FirstOrDefault(a => a.Type?.ToDisplayString() == NamespacePrefix("StringTransformation")).Value as int?;
+        return value;
+    }
+
+    private static string NamespacePrefix(string name) => $"{Namespace}.{name}";
 
     private string Validation(INamedTypeSymbol? checkValidator)
     {

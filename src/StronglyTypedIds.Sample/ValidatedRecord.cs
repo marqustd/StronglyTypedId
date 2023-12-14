@@ -1,6 +1,6 @@
 namespace StronglyTypedIds.Sample;
 
-// [StronglyTypedId(validator: typeof(ValidatedRecordValidator))]
+[StronglyTypedId(StringTransformation.ToUpper, validator: typeof(ValidatedRecordValidator))]
 public partial record ValidatedRecord;
 
 internal class ValidatedRecordValidator : IValidator
