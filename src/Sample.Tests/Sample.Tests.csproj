@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\StronglyTypedIds.Sample\StronglyTypedIds.Sample.csproj" />
+      <ProjectReference Include="..\Sample\Sample.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,4 +1,7 @@
-namespace StronglyTypedIds.Sample;
+using System;
+using StronglyTypedIds;
+
+namespace Sample;
 
 [StronglyTypedId(validator: typeof(ValidatedRecordValidator))]
 public partial record ValidatedRecord;
