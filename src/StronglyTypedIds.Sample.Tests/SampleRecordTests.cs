@@ -1,4 +1,4 @@
-namespace StronglyTypedId.Sample.Tests;
+namespace StronglyTypedIds.Sample.Tests;
 
 public class SampleRecordTests
 {

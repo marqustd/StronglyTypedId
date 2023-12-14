@@ -1,12 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StronglyTypedId", "src\StronglyTypedId\StronglyTypedId.csproj", "{539016A6-CE02-4928-823A-1774D8A4A538}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StronglyTypedIds", "src\StronglyTypedIds\StronglyTypedIds.csproj", "{539016A6-CE02-4928-823A-1774D8A4A538}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StronglyTypedId.Sample", "src\StronglyTypedId.Sample\StronglyTypedId.Sample.csproj", "{34C93610-EAB7-4820-8F59-2FEBD35877C1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StronglyTypedIds.Sample", "src\StronglyTypedIds.Sample\StronglyTypedIds.Sample.csproj", "{34C93610-EAB7-4820-8F59-2FEBD35877C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StronglyTypedId.Tests", "src\StronglyTypedId.Tests\StronglyTypedId.Tests.csproj", "{3CDBDBD3-DCB3-4B17-99A9-948B00A4C5AB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StronglyTypedIds.Tests", "src\StronglyTypedIds.Tests\StronglyTypedIds.Tests.csproj", "{3CDBDBD3-DCB3-4B17-99A9-948B00A4C5AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StronglyTypedId.Sample.Tests", "src\StronglyTypedId.Sample.Tests\StronglyTypedId.Sample.Tests.csproj", "{58F54747-4F09-4648-AE9A-4042072B85AC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StronglyTypedIds.Sample.Tests", "src\StronglyTypedIds.Sample.Tests\StronglyTypedIds.Sample.Tests.csproj", "{58F54747-4F09-4648-AE9A-4042072B85AC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StronglyTypedIds.Attributes", "src\StronglyTypedIds.Attributes\StronglyTypedIds.Attributes.csproj", "{A9FB9EB8-9A0C-429E-AA6B-F7E754A9C587}"
 EndProject

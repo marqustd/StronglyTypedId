@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace StronglyTypedId;
+namespace StronglyTypedIds;
 
 [Generator]
 public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
@@ -30,7 +30,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
             $"{AttributeName}.g.cs",
             SourceText.From(AttributeSourceCode, Encoding.UTF8)));
 
-        // Filter classes annotated with the [StronglyTypedId] attribute. Only filtered Syntax Nodes can trigger code generation.
+        // Filter classes annotated with the [StronglyTypedIds] attribute. Only filtered Syntax Nodes can trigger code generation.
         var provider = context.SyntaxProvider
             .CreateSyntaxProvider(
                 (s, _) => s is RecordDeclarationSyntax,
@@ -44,7 +44,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// Checks whether the Node is annotated with the [StronglyTypedId] attribute and maps syntax context to the specific node type (ClassDeclarationSyntax).
+    /// Checks whether the Node is annotated with the [StronglyTypedIds] attribute and maps syntax context to the specific node type (ClassDeclarationSyntax).
     /// </summary>
     /// <param name="context">Syntax context, based on CreateSyntaxProvider predicate</param>
     /// <returns>The specific cast and whether the attribute was found.</returns>
@@ -62,7 +62,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
 
             string attributeName = attributeSymbol.ContainingType.ToDisplayString();
 
-            // Check the full name of the [StronglyTypedId] attribute.
+            // Check the full name of the [StronglyTypedIds] attribute.
             if (attributeName == $"{Namespace}.{AttributeName}")
                 return (recordDeclarationSyntax, true);
         }
@@ -72,11 +72,11 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
 
     /// <summary>
     /// Generate code action.
-    /// It will be executed on specific nodes (ClassDeclarationSyntax annotated with the [StronglyTypedId] attribute) changed by the user.
+    /// It will be executed on specific nodes (ClassDeclarationSyntax annotated with the [StronglyTypedIds] attribute) changed by the user.
     /// </summary>
     /// <param name="context">Source generation context used to add source files.</param>
     /// <param name="compilation">Compilation used to provide access to the Semantic Model.</param>
-    /// <param name="classDeclarations">Nodes annotated with the [StronglyTypedId] attribute that trigger the generate action.</param>
+    /// <param name="classDeclarations">Nodes annotated with the [StronglyTypedIds] attribute that trigger the generate action.</param>
     private void GenerateCode(SourceProductionContext context,
         Compilation compilation,
         ImmutableArray<RecordDeclarationSyntax> classDeclarations)

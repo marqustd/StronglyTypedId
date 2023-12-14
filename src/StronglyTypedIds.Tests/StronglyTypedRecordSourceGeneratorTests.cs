@@ -1,9 +1,10 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using StronglyTypedIds;
 using Xunit;
 
-namespace StronglyTypedId.Tests;
+namespace StronglyTypedIds.Tests;
 
 public class StronglyTypedRecordSourceGeneratorTests
 {
@@ -11,7 +12,7 @@ public class StronglyTypedRecordSourceGeneratorTests
         """
         namespace TestNamespace;
 
-        [StronglyTypedIds.StronglyTypedId]
+        [StronglyTypedIds.StronglyTypedIds]
         public partial record TestedRecord;
         """;
 
