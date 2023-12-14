@@ -6,7 +6,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StronglyTypedId.Sample", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StronglyTypedId.Tests", "src\StronglyTypedId.Tests\StronglyTypedId.Tests.csproj", "{3CDBDBD3-DCB3-4B17-99A9-948B00A4C5AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StronglyTypedId.Sample.Tests", "StronglyTypedId.Sample.Tests\StronglyTypedId.Sample.Tests.csproj", "{58F54747-4F09-4648-AE9A-4042072B85AC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StronglyTypedId.Sample.Tests", "src\StronglyTypedId.Sample.Tests\StronglyTypedId.Sample.Tests.csproj", "{58F54747-4F09-4648-AE9A-4042072B85AC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StronglyTypedIds.Attributes", "src\StronglyTypedIds.Attributes\StronglyTypedIds.Attributes.csproj", "{A9FB9EB8-9A0C-429E-AA6B-F7E754A9C587}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,5 +32,9 @@ Global
 		{58F54747-4F09-4648-AE9A-4042072B85AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58F54747-4F09-4648-AE9A-4042072B85AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58F54747-4F09-4648-AE9A-4042072B85AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9FB9EB8-9A0C-429E-AA6B-F7E754A9C587}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9FB9EB8-9A0C-429E-AA6B-F7E754A9C587}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9FB9EB8-9A0C-429E-AA6B-F7E754A9C587}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9FB9EB8-9A0C-429E-AA6B-F7E754A9C587}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
