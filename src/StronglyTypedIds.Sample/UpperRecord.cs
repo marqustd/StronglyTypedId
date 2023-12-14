@@ -1,4 +1,4 @@
 namespace StronglyTypedIds.Sample;
 
-// [StronglyTypedId(StringTransformation.ToUpper)]
+[StronglyTypedId(StringTransformation.ToUpper)]
 public partial record UpperRecord;
