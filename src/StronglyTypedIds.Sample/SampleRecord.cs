@@ -1,6 +1,4 @@
-using StronglyTypedIds;
-
 namespace StronglyTypedIds.Sample;
 
-[StronglyTypedId]
+// [StronglyTypedId]
 public partial record SampleRecord;

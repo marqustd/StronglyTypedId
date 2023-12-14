@@ -1,24 +1,24 @@
 using System.Collections.Immutable;
+using System.Reflection;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using System.Linq;
 
 namespace StronglyTypedIds;
 
 [Generator]
 public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
 {
-    private const string Namespace = "StronglyTypedIds";
-    private const string AttributeName = "StronglyTypedIdAttribute";
+    private static readonly string Namespace = typeof(StronglyTypedRecordSourceGenerator).Namespace!;
+    private const string AttributeName = nameof(StronglyTypedIdAttribute);
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var x = EmbeddedSources.StronglyTypedIdAttributeSource;
-        // Add the marker attribute to the compilation.
-        context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
-            $"{AttributeName}.g.cs",
-            SourceText.From(EmbeddedSources.StronglyTypedIdAttributeSource, Encoding.UTF8)));
+        RegisterAttribute(context);
+        RegisterValidator(context);
+        RegisterStringTransformation(context);
 
         // Filter classes annotated with the [StronglyTypedIds] attribute. Only filtered Syntax Nodes can trigger code generation.
         var provider = context.SyntaxProvider
@@ -31,6 +31,27 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
         // Generate the source code.
         context.RegisterSourceOutput(context.CompilationProvider.Combine(provider.Collect()),
             ((ctx, t) => GenerateCode(ctx, t.Left, t.Right)));
+    }
+
+    private static void RegisterAttribute(IncrementalGeneratorInitializationContext context)
+    {
+        context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
+            $"{AttributeName}.g.cs",
+            SourceText.From(EmbeddedSources.StronglyTypedIdAttributeSource, Encoding.UTF8)));
+    }
+    
+    private static void RegisterValidator(IncrementalGeneratorInitializationContext context)
+    {
+        context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
+            $"{nameof(IValidator)}.g.cs",
+            SourceText.From(EmbeddedSources.IValidatorSource, Encoding.UTF8)));
+    }
+    
+    private static void RegisterStringTransformation(IncrementalGeneratorInitializationContext context)
+    {
+        context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
+            $"{nameof(StringTransformation)}.g.cs",
+            SourceText.From(EmbeddedSources.StringTransformationSource, Encoding.UTF8)));
     }
 
     /// <summary>
@@ -85,6 +106,10 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
 
             // 'Identifier' means the token of the node. Get class name from the syntax node.
             var className = recordDeclarationSyntax.Identifier.Text;
+            
+            var checkValidator = classSymbol.GetAttributes()
+                .FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == $"{Namespace}.{AttributeName}")?
+                .ConstructorArguments.FirstOrDefault().Value as INamedTypeSymbol;
 
             // Build up the source code
             var code =
@@ -98,6 +123,8 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
                       
                       public {{className}}(string value)
                       {
+                        {{Validation(checkValidator)}}
+                      
                           Value = value.ToUpperInvariant();
                       }
                       
@@ -112,5 +139,10 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
             // Add the source code to the compilation.
             context.AddSource($"{className}.g.cs", SourceText.From(code, Encoding.UTF8));
         }
+    }
+
+    private string Validation(INamedTypeSymbol? checkValidator)
+    {
+        return string.Empty;
     }
 }

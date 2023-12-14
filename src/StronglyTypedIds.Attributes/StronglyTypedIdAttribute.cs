@@ -3,7 +3,10 @@
 namespace StronglyTypedIds;
 
 [System.AttributeUsage(System.AttributeTargets.Class)]
-public class StronglyTypedIdAttribute : Attribute
+public sealed class StronglyTypedIdAttribute : Attribute
 {
-
+    public StronglyTypedIdAttribute(StringTransformation transformation = StringTransformation.None, Type? validator = default)
+    {
+        
+    }
 }

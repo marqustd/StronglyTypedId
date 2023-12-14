@@ -26,5 +26,9 @@
         <EmbeddedResource Include="..\StronglyTypedIds.Attributes\*.cs" Link="Templates\Sources\%(Filename)%(Extension)" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\StronglyTypedIds.Attributes\StronglyTypedIds.Attributes.csproj" />
+    </ItemGroup>
+
 
 </Project>
