@@ -11,6 +11,9 @@ public partial record UpperRecord;
 [StronglyTypedId(validator: typeof(ValidatedRecordValidator))]
 public partial record ValidatedRecord;
 
+[StronglyTypedId(serializers: "BsonSerializer")]
+public partial record SerializedRecord;
+
 internal class ValidatedRecordValidator : IValidator
 {
     public bool Validate(string value)
