@@ -36,7 +36,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
                 (s, _) => s is RecordDeclarationSyntax,
                 (ctx, _) => GetClassDeclarationForSourceGen(ctx))
             .Where(t => t.reportAttributeFound)
-            .Select((t, _) => t.Item1);
+            .Select((t, _) => t.recordSyntax);
 
         // Generate the source code.
         context.RegisterSourceOutput(context.CompilationProvider.Combine(provider.Collect()),
@@ -48,7 +48,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
     /// </summary>
     /// <param name="context">Syntax context, based on CreateSyntaxProvider predicate</param>
     /// <returns>The specific cast and whether the attribute was found.</returns>
-    private static (RecordDeclarationSyntax, bool reportAttributeFound) GetClassDeclarationForSourceGen(
+    private static (RecordDeclarationSyntax recordSyntax, bool reportAttributeFound) GetClassDeclarationForSourceGen(
         GeneratorSyntaxContext context)
     {
         var recordDeclarationSyntax = (RecordDeclarationSyntax)context.Node;
