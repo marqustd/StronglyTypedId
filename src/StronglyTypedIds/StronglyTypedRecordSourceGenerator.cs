@@ -165,7 +165,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
              namespace {{namespaceName}};
 
              {{GenerateSerializersAttributes(serializers)}}
-             partial record struct {{className}}
+             readonly partial record struct {{className}}
              {
                  public string Value { get; }
                  
