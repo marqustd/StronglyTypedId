@@ -13,4 +13,8 @@
         <None Remove="DDD.UbiquitousLanguageRegistry.txt"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="MongoDB.Bson" Version="2.23.0" />
+    </ItemGroup>
+
 </Project>

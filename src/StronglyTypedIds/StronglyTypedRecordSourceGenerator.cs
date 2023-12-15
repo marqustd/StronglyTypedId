@@ -236,10 +236,23 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
 
     private static string Using(string[] serializers)
     {
-        return """
-               using System.Diagnostics.CodeAnalysis;
-               using System;
-               """;
+        var sb = new StringBuilder("""
+                                   using System.Diagnostics.CodeAnalysis;
+                                   using System;
+                                   """);
+
+        foreach (var serializer in serializers)
+        {
+            switch (serializer)
+            {
+                case "BsonSerializer":
+                    sb.AppendLine("using MongoDB.Bson.Serialization;");
+                    sb.AppendLine("using MongoDB.Bson.Serialization.Attributes;");
+                    break;
+            }
+        }
+
+        return sb.ToString();
     }
 
     private static string Constructor(INamedTypeSymbol? validator, int? stringTransformation, string className)
