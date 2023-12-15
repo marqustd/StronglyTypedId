@@ -2,6 +2,8 @@
 
 namespace StronglyTypedIds;
 
+#nullable enable
+
 [System.AttributeUsage(System.AttributeTargets.Class | AttributeTargets.Struct)]
 public sealed class StronglyTypedIdAttribute : Attribute
 {
