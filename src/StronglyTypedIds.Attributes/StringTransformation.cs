@@ -6,3 +6,4 @@ public enum StringTransformation
     ToUpper = 1,
     ToLower = 2
 }
+

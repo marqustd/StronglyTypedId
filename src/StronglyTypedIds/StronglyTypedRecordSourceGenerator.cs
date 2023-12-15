@@ -178,7 +178,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
                  {{Operators(className)}}
              }
              
-             {{GenerateSerializers(serializers, className)}}
+             {{GenerateSerializers(serializers, className, validator is not null)}}
              """;
 
     private static string Operators(string className)
@@ -192,7 +192,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
                 """;
     }
 
-    private static string GenerateSerializers(string[] serializers, string className)
+    private static string GenerateSerializers(string[] serializers, string className, bool isValidated)
     {
         var sb = new StringBuilder();
 
@@ -201,7 +201,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
             switch (serializer)
             {
                 case "BsonSerializer":
-                    sb.Append(BsonSerializer(className));
+                    sb.Append(BsonSerializer(className, isValidated));
                     break;
             }
         }
@@ -209,8 +209,12 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
         return sb.ToString();
     }
 
-    private static string BsonSerializer(string className)
+    private static string BsonSerializer(string className, bool isValidated)
     {
+        var creation = isValidated
+            ? $"return {className}.Parse(value);"
+            : $"return new {className}(value);";
+        
         return $$"""
                public class {{className}}Serializer : IBsonSerializer<{{className}}>
                {
@@ -222,7 +226,8 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
                    public {{className}} Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
                    {
                        var value = context.Reader.ReadString();
-                       return new {{className}}(value);
+                       
+                       {{creation}}
                    }
                
                    public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value) =>
@@ -250,7 +255,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
                  {{Operators(className)}}
              }
              
-             {{GenerateSerializers(serializers, className)}}
+             {{GenerateSerializers(serializers, className, validator is not null)}}
              """;
 
     private static string GenerateSerializersAttributes(string[] serializers, string className)
