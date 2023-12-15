@@ -164,7 +164,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
 
              namespace {{namespaceName}};
 
-             {{GenerateSerializersAttributes(serializers)}}
+             {{GenerateSerializersAttributes(serializers, className)}}
              readonly partial record struct {{className}}
              {
                  public string Value { get; }
@@ -178,7 +178,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
                  {{Operators(className)}}
              }
              
-             {{GenerateSerializers(serializers)}}
+             {{GenerateSerializers(serializers, className)}}
              """;
 
     private static string Operators(string className)
@@ -192,9 +192,45 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
                 """;
     }
 
-    private static string GenerateSerializers(string[] serializers)
+    private static string GenerateSerializers(string[] serializers, string className)
     {
-        return string.Empty;
+        var sb = new StringBuilder();
+
+        foreach (var serializer in serializers)
+        {
+            switch (serializer)
+            {
+                case "BsonSerializer":
+                    sb.Append(BsonSerializer(className));
+                    break;
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    private static string BsonSerializer(string className)
+    {
+        return $$"""
+               public class {{className}}Serializer : IBsonSerializer<{{className}}>
+               {
+                   object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args) => Deserialize(context, args);
+               
+                   public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, {{className}} value) =>
+                       Serialize(context, args, value as object);
+               
+                   public {{className}} Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+                   {
+                       var value = context.Reader.ReadString();
+                       return new {{className}}(value);
+                   }
+               
+                   public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value) =>
+                       context.Writer.WriteString(value.ToString());
+               
+                   public Type ValueType => typeof({{className}});
+               }
+               """;
     }
 
     private static string ClassCode(string className, string namespaceName, INamedTypeSymbol? validator, int? stringTransformation, string[] serializers)
@@ -204,7 +240,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
 
              namespace {{namespaceName}};
 
-             {{GenerateSerializersAttributes(serializers)}}
+             {{GenerateSerializersAttributes(serializers, className)}}
              partial record {{className}}
              {
                  public string Value { get; }
@@ -214,10 +250,10 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
                  {{Operators(className)}}
              }
              
-             {{GenerateSerializers(serializers)}}
+             {{GenerateSerializers(serializers, className)}}
              """;
 
-    private static string GenerateSerializersAttributes(string[] serializers)
+    private static string GenerateSerializersAttributes(string[] serializers, string className)
     {
         var sb = new StringBuilder();
         
@@ -226,7 +262,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
             switch (serializer)
             {
                 case "BsonSerializer":
-                    sb.AppendLine("[BsonSerializer(typeof(ProfileIdSerializer))]");
+                    sb.AppendLine($"[BsonSerializer(typeof({className}Serializer))]");
                     break;
             }
         }
