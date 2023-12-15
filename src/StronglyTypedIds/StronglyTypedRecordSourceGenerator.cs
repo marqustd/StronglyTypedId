@@ -186,7 +186,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
 
     private static string GenerateSerializers(string[] serializers)
     {
-        throw new NotImplementedException();
+        return string.Empty;
     }
 
     private static string ClassCode(string className, string namespaceName, INamedTypeSymbol? validator, int? stringTransformation, string[] serializers)
@@ -220,9 +220,12 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
 
     private static string ValidationConstructor(INamedTypeSymbol validator, int? stringTransformation, string className) =>
         $$"""
+          
+          private static readonly {{validator}} validator = new();
+          
           private {{className}}(string value)
           {
-              if (!new {{validator}}().Validate(value))
+              if (!validator.Validate(value))
               {
                 throw new ArgumentException($"{value} is not a valid {{className}}", nameof(value));
               }
@@ -233,7 +236,7 @@ public class StronglyTypedRecordSourceGenerator : IIncrementalGenerator
 
           public static bool TryParse(string value, [NotNullWhen(true)] out {{className}} stronglyTyped)
           {
-              if (new {{validator}}().Validate(value))
+              if (validator.Validate(value))
               {
                   stronglyTyped = new {{className}}(value);
                   return true;
